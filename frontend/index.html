@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Industrial Machine Failure Prediction</title>
+
+    <link rel="stylesheet" href="./style.css?v=2">
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <h1>Industrial Machine Failure Prediction</h1>
+            <p>
+                Predict machine failure using machine operating conditions
+            </p>
+        </div>
+    </header>
+
+
+    <main class="container">
+
+        <!-- Introduction -->
+        <section class="intro">
+            <h2>Predictive Maintenance Dashboard</h2>
+
+            <p>
+                Enter the machine's operating parameters below to predict
+                the probability of machine failure.
+            </p>
+        </section>
+
+
+        <!-- Dashboard Summary -->
+        <section class="dashboard-grid">
+
+            <div class="summary-card">
+                <span>Total Predictions</span>
+                <strong id="totalPredictions">0</strong>
+            </div>
+
+            <div class="summary-card">
+                <span>Normal Predictions</span>
+                <strong id="normalPredictions">0</strong>
+            </div>
+
+            <div class="summary-card">
+                <span>Failures Predicted</span>
+                <strong id="failurePredictions">0</strong>
+            </div>
+
+            <div class="summary-card">
+                <span>API Status</span>
+                <strong id="apiStatus">Checking...</strong>
+            </div>
+
+        </section>
+
+
+        <!-- Machine Parameters -->
+        <section class="card">
+
+            <div class="card-header">
+                <h2>Machine Parameters</h2>
+
+                <p>
+                    Enter the current operating conditions of the machine.
+                </p>
+            </div>
+
+
+            <form id="predictionForm">
+
+                <div class="form-grid">
+
+                    <!-- Machine Type -->
+                    <div class="form-group">
+
+                        <label for="type">
+                            Machine Type
+                        </label>
+
+                        <select id="type" required>
+                            <option value="">Select Type</option>
+                            <option value="L">L - Low</option>
+                            <option value="M">M - Medium</option>
+                            <option value="H">H - High</option>
+                        </select>
+
+                    </div>
+
+
+                    <!-- Air Temperature -->
+                    <div class="form-group">
+
+                        <label for="airTemperature">
+                            Air Temperature (K)
+                        </label>
+
+                        <input
+                            type="number"
+                            id="airTemperature"
+                            min="295"
+                            max="305"
+                            step="0.1"
+                            placeholder="e.g. 298.1"
+                            required
+                        >
+
+                    </div>
+
+
+                    <!-- Process Temperature -->
+                    <div class="form-group">
+
+                        <label for="processTemperature">
+                            Process Temperature (K)
+                        </label>
+
+                        <input
+                            type="number"
+                            id="processTemperature"
+                            min="305"
+                            max="314"
+                            step="0.1"
+                            placeholder="e.g. 308.6"
+                            required
+                        >
+
+                    </div>
+
+
+                    <!-- Rotational Speed -->
+                    <div class="form-group">
+
+                        <label for="rotationalSpeed">
+                            Rotational Speed (rpm)
+                        </label>
+
+                        <input
+                            type="number"
+                            id="rotationalSpeed"
+                            min="1168"
+                            max="2886"
+                            step="1"
+                            placeholder="e.g. 1551"
+                            required
+                        >
+
+                    </div>
+
+
+                    <!-- Torque -->
+                    <div class="form-group">
+
+                        <label for="torque">
+                            Torque (Nm)
+                        </label>
+
+                        <input
+                            type="number"
+                            id="torque"
+                            min="3.8"
+                            max="76.6"
+                            step="0.1"
+                            placeholder="e.g. 42.8"
+                            required
+                        >
+
+                    </div>
+
+
+                    <!-- Tool Wear -->
+                    <div class="form-group">
+
+                        <label for="toolWear">
+                            Tool Wear (min)
+                        </label>
+
+                        <input
+                            type="number"
+                            id="toolWear"
+                            min="0"
+                            max="253"
+                            step="1"
+                            placeholder="e.g. 0"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="predict-btn"
+                >
+                    Predict Machine Failure
+                </button>
+
+            </form>
+
+        </section>
+
+
+        <!-- Loading -->
+        <section
+            id="loadingCard"
+            class="card loading-card"
+            style="display: none;"
+        >
+
+            <div class="loader"></div>
+
+            <p>
+                Analyzing machine parameters...
+            </p>
+
+        </section>
+
+
+        <!-- Prediction Result -->
+        <section
+            id="resultCard"
+            class="card result-card"
+            style="display: none;"
+        >
+
+            <div class="card-header">
+                <h2>Prediction Result</h2>
+            </div>
+
+
+            <div class="result-content">
+                <span id="predictionStatus" class="prediction-status">
+                    Awaiting Prediction
+                </span>
+
+                <h3 id="predictionResult">
+                    Prediction
+                </h3>
+
+                <p id="predictionMessage">
+                    -
+                </p>
+
+
+                <!-- Failure Probability -->
+                <div class="probability-section">
+
+                    <div class="probability-header">
+
+                        <span>
+                            Failure Probability
+                        </span>
+
+                        <strong id="failureProbability">
+                            0%
+                        </strong>
+
+                    </div>
+
+
+                    <div class="probability-bar">
+
+                        <div
+                            id="failureProgress"
+                            class="probability-fill"
+                        ></div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Normal Probability -->
+                <div class="probability-section">
+
+                    <div class="probability-header">
+
+                        <span>
+                            Normal Operation Probability
+                        </span>
+
+                        <strong id="normalProbability">
+                            0%
+                        </strong>
+
+                    </div>
+
+
+                    <div class="probability-bar">
+
+                        <div
+                            id="normalProgress"
+                            class="probability-fill"
+                        ></div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <button
+                type="button"
+                id="resetButton"
+                class="reset-btn"
+            >
+                Reset
+            </button>
+
+        </section>
+
+
+        <!-- Prediction History -->
+        <section class="card">
+
+            <div class="card-header">
+
+                <h2>Prediction History</h2>
+
+                <p>
+                    Recent predictions from this session.
+                </p>
+
+            </div>
+
+
+            <div
+                id="historyContainer"
+                class="history-container"
+            >
+
+                <p class="empty-history">
+                    No predictions yet.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- Model Performance -->
+        <section class="card performance-card">
+
+            <div class="card-header">
+
+                <h2>Model Performance</h2>
+
+                <p>
+                    Performance of the Random Forest model
+                    on the test dataset.
+                </p>
+
+            </div>
+
+
+            <div class="performance-grid">
+
+                <div class="metric-card">
+                    <span>Accuracy</span>
+                    <strong>97.30%</strong>
+                </div>
+
+
+                <div class="metric-card">
+                    <span>Precision</span>
+                    <strong>58.97%</strong>
+                </div>
+
+
+                <div class="metric-card">
+                    <span>Recall</span>
+                    <strong>67.65%</strong>
+                </div>
+
+
+                <div class="metric-card">
+                    <span>F1 Score</span>
+                    <strong>63.01%</strong>
+                </div>
+
+
+                <div class="metric-card">
+                    <span>ROC-AUC</span>
+                    <strong>97.11%</strong>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- Feature Importance -->
+        <section class="card feature-card">
+
+            <div class="card-header">
+
+                <h2>Feature Importance</h2>
+
+                <p>
+                    Relative importance of each machine parameter
+                    used by the Random Forest model.
+                </p>
+
+            </div>
+
+
+            <div
+                id="featureImportance"
+                class="feature-importance"
+            >
+
+                <p>
+                    Loading feature importance...
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- Model Information -->
+        <section class="card">
+
+            <div class="card-header">
+
+                <h2>Model Information</h2>
+
+                <p>
+                    Details about the machine learning model
+                    used for prediction.
+                </p>
+
+            </div>
+
+
+            <div class="info-grid">
+
+                <div class="info-card">
+                    <span>Algorithm</span>
+                    <strong>Random Forest</strong>
+                </div>
+
+
+                <div class="info-card">
+                    <span>Dataset</span>
+                    <strong>
+                        AI4I 2020 Predictive Maintenance
+                    </strong>
+                </div>
+
+
+                <div class="info-card">
+                    <span>Training Samples</span>
+                    <strong>8,000</strong>
+                </div>
+
+
+                <div class="info-card">
+                    <span>Testing Samples</span>
+                    <strong>2,000</strong>
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- Footer -->
+    <footer class="footer">
+
+        <p>
+            Industrial Machine Failure Prediction
+        </p>
+
+    </footer>
+
+
+    <script src="script.js"></script>
+
+</body>
+</html>
