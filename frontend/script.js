@@ -1,5 +1,4 @@
-const API_URL = "http://127.0.0.1:5000/api";
-
+const API_URL = "https://industrial-machine-failure-prediction-api.onrender.com/api";
 let predictionHistory = [];
 
 const predictButton =document.querySelector(".predict-btn");
